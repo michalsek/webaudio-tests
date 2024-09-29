@@ -312,7 +312,7 @@ function App() {
 
     const params = {
       tone: 40,
-      decay: 0.5,
+      decay: 0.3,
       ratios: [2, 3, 4.16, 5.43, 6.79, 8.21],
       bandpassFilterFrequency: 10000,
       highpassFilterFrequency: 7000,
@@ -507,6 +507,7 @@ function App() {
           value={showAxes}
           onToggle={() => {
             setShowAxes((prev) => !prev);
+            clear();
           }}>
           Show axes
         </Toggle>
@@ -514,6 +515,7 @@ function App() {
           value={showGrid}
           onToggle={() => {
             setShowGrid((prev) => !prev);
+            clear();
           }}>
           Show grid
         </Toggle>
