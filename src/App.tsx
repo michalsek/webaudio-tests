@@ -478,7 +478,7 @@ function App() {
 
   useEffect(() => {
     clear();
-  }, []);
+  }, [showAxes, showGrid]);
 
   return (
     <div className="flex flex-col items-center pt-4">
@@ -507,7 +507,6 @@ function App() {
           value={showAxes}
           onToggle={() => {
             setShowAxes((prev) => !prev);
-            clear();
           }}>
           Show axes
         </Toggle>
@@ -515,7 +514,6 @@ function App() {
           value={showGrid}
           onToggle={() => {
             setShowGrid((prev) => !prev);
-            clear();
           }}>
           Show grid
         </Toggle>
