@@ -43,7 +43,7 @@ jobs:
         run: yarn
 
       - name: Build project
-        run: BASE_URL=/webaudio-tets/ yarn build
+        run: BASE_URL=/webaudio-tests/ yarn build
 
       - name: Upload build files
         uses: actions/upload-pages-artifact@v3
