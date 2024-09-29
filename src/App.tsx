@@ -1,4 +1,6 @@
-import React, { PropsWithChildren, useRef, useState } from 'react';
+import React, { PropsWithChildren, useEffect, useRef, useState } from 'react';
+
+const cPlotPadding = 40 as const;
 
 interface DataSink {
   sampleRate: number;
@@ -27,7 +29,7 @@ const Toggle: React.FC<
   PropsWithChildren<{ value: boolean; onToggle: () => void }>
 > = ({ value, onToggle, children }) => {
   return (
-    <label className="inline-flex items-center cursor-pointer">
+    <label className="inline-flex items-center cursor-pointer mx-6">
       <input
         type="checkbox"
         value={value ? '1' : '0'}
@@ -47,6 +49,8 @@ function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const aCtxRef = useRef<AudioContext | null>(null);
   const [eLogData, setELogData] = useState(false);
+  const [showGrid, setShowGrid] = useState(false);
+  const [showAxes, setShowAxes] = useState(true);
 
   const getAudioContext = () => {
     if (!aCtxRef.current) {
@@ -135,18 +139,76 @@ function App() {
     dataSink.data = outputData;
   };
 
-  const drawData = (dataSink: DataSink) => {
+  const drawAxes = () => {
+    const { canvas, cvsCtx } = getCanvas();
+
+    cvsCtx.lineWidth = 2;
+    cvsCtx.strokeStyle = '#888888';
+
+    cvsCtx.beginPath();
+    cvsCtx.moveTo(0, canvas.height / 2);
+    cvsCtx.lineTo(canvas.width, canvas.height / 2);
+    cvsCtx.stroke();
+
+    cvsCtx.beginPath();
+    cvsCtx.moveTo(cPlotPadding, 0);
+    cvsCtx.lineTo(cPlotPadding, canvas.height);
+    cvsCtx.stroke();
+  };
+
+  const drawGrid = () => {
+    const { canvas, cvsCtx } = getCanvas();
+
+    cvsCtx.lineWidth = 1;
+    cvsCtx.strokeStyle = '#eeeeee';
+
+    const inc = Math.max(canvas.width / 60, canvas.height / 60);
+
+    const xStart = cPlotPadding - Math.floor(cPlotPadding / inc) * inc;
+    for (let i = xStart; i < canvas.width; i += inc) {
+      cvsCtx.beginPath();
+      cvsCtx.moveTo(i, 0);
+      cvsCtx.lineTo(i, canvas.height);
+      cvsCtx.stroke();
+    }
+
+    const yStart =
+      canvas.height / 2 - Math.floor(canvas.height / 2 / inc) * inc;
+
+    for (let i = yStart; i < canvas.height; i += inc) {
+      cvsCtx.beginPath();
+      cvsCtx.moveTo(0, i);
+      cvsCtx.lineTo(canvas.width, i);
+      cvsCtx.stroke();
+    }
+  };
+
+  const clear = () => {
     const { canvas, cvsCtx } = getCanvas();
 
     cvsCtx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (showGrid) {
+      drawGrid();
+    }
+
+    if (showAxes) {
+      drawAxes();
+    }
+  };
+
+  const drawData = (dataSink: DataSink) => {
+    const { canvas, cvsCtx } = getCanvas();
+
+    clear();
 
     cvsCtx.lineWidth = 1;
     cvsCtx.strokeStyle = '#abcdef';
 
     cvsCtx.beginPath();
 
-    const xIncrement = (canvas.width * 1.0) / dataSink.data.length;
-    let x = 0;
+    const xIncrement = (canvas.width - cPlotPadding) / dataSink.data.length;
+    let x = cPlotPadding;
 
     const getY = (v: number) => (v * canvas.height) / 256.0;
 
@@ -414,11 +476,9 @@ function App() {
     noise.stop(tNow + params.decay);
   };
 
-  const onClearPress = () => {
-    const { canvas, cvsCtx } = getCanvas();
-
-    cvsCtx.clearRect(0, 0, canvas.width, canvas.height);
-  };
+  useEffect(() => {
+    clear();
+  }, []);
 
   return (
     <div className="flex flex-col items-center pt-4">
@@ -427,14 +487,6 @@ function App() {
         <Button onClick={onHiHatPress}>Hi-Hat</Button>
         <Button onClick={onClapPress}>Clap</Button>
         <Button onClick={onSnarePress}>Snare</Button>
-        <Button onClick={onClearPress}>Clear</Button>
-        <Toggle
-          value={eLogData}
-          onToggle={() => {
-            setELogData((prev) => !prev);
-          }}>
-          Log data
-        </Toggle>
       </div>
       <canvas
         ref={canvasRef}
@@ -442,6 +494,30 @@ function App() {
         height={1000}
         className="rounded bg-white"
       />
+      <div className="py-4 flex flex-row justify-center items-center">
+        <Button onClick={clear}>Clear</Button>
+        <Toggle
+          value={eLogData}
+          onToggle={() => {
+            setELogData((prev) => !prev);
+          }}>
+          Log data
+        </Toggle>
+        <Toggle
+          value={showAxes}
+          onToggle={() => {
+            setShowAxes((prev) => !prev);
+          }}>
+          Show axes
+        </Toggle>
+        <Toggle
+          value={showGrid}
+          onToggle={() => {
+            setShowGrid((prev) => !prev);
+          }}>
+          Show grid
+        </Toggle>
+      </div>
     </div>
   );
 }
