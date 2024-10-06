@@ -457,6 +457,7 @@ function App() {
     noiseEnvelope.gain.exponentialRampToValueAtTime(0.001, tNow + params.decay);
 
     /* Oscillator source */
+    oscillator.type = 'triangle';
     oscillator.frequency.setValueAtTime(params.tone, tNow);
     oscillator.frequency.exponentialRampToValueAtTime(
       0.01,
